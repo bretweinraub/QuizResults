@@ -140,7 +140,7 @@ try
 {
     $quizResults = new QuizResults();
     $quizResults->InitFromRequest($requestParameters);
-    writeToDatabase($quizResults);
+    /* writeToDatabase($quizResults); */
     $generator = QuizReportFactory::CreateGenerator($quizResults, $requestParameters);
     $report = $generator->createReport();
 
