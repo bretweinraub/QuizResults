@@ -2,56 +2,56 @@
 
 header('Access-Control-Allow-Origin: *');
 
-require_once("../../../wp-load.php");
+/* require_once("../../../wp-load.php"); */
 
-/* function initializeManager() {
- *     $manager = \Bright\MigrationManager::get_instance(
- * 	array(
- * 	    'migration_table_name' => 'equaliteach_results_schemaversion',
- * 	    'log_func' => function($obj,$description=null) {
- * 		$bright = \Bright\brightClass()::getInstance();
- * 		$bright->log($obj,$description);
- * 	    },
- * 	    'execute_sql_func' => function($sql) {
- * 		$bright = \Bright\brightClass()::getInstance();
- * 		return $bright->execute_sql($sql);
- * 	    }
- *     ));
- *     return $manager;
- * }
- * 
- * $manager = initializeManager();
- * 
- * $manager->add_patch('20231011150001',<<<EOF
- *  create table equaliteach_submissions (
- *   `id` INT NOT NULL AUTO_INCREMENT,
- *   `submission` TEXT not null,
- *   `learner_id` varchar(255) NOT NULL,
- *   `title` varchar(255)       not null,
- *   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
- *   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
- *   PRIMARY KEY (ID)
- * );  
- * EOF
- * );
- * 
- * $manager->add_patch('20231011150002',<<<EOF
- * create table equaliteach_quiz_results(
- *   `id` INT NOT NULL AUTO_INCREMENT,
- *   `equaliteach_submission_id` INT NOT NULL,
- *   `question_number` integer not null,
- *   `question_text` varchar(255),
- *   `user_answer`  varchar(255),
- *   `correct_answer`  varchar(255),
- *   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
- *   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
- *   PRIMARY KEY (ID),
- *   FOREIGN KEY (equaliteach_submission_id) REFERENCES equaliteach_submissions(id)
- * );
- * EOF
- * );
- * 
- * $manager->migrate_database(); */
+/* function initializeManager() { */
+/*     $manager = \Bright\MigrationManager::get_instance( */
+/* 	array( */
+/* 	    'migration_table_name' => 'equaliteach_results_schemaversion', */
+/* 	    'log_func' => function($obj,$description=null) { */
+/* 		$bright = \Bright\brightClass()::getInstance(); */
+/* 		$bright->log($obj,$description); */
+/* 	    }, */
+/* 	    'execute_sql_func' => function($sql) { */
+/* 		$bright = \Bright\brightClass()::getInstance(); */
+/* 		return $bright->execute_sql($sql); */
+/* 	    } */
+/*     )); */
+/*     return $manager; */
+/* } */
+
+/* $manager = initializeManager(); */
+
+/* $manager->add_patch('20231011150001',<<<EOF */
+/*  create table equaliteach_submissions ( */
+/*   `id` INT NOT NULL AUTO_INCREMENT, */
+/*   `submission` TEXT not null, */
+/*   `learner_id` varchar(255) NOT NULL, */
+/*   `title` varchar(255)       not null, */
+/*   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, */
+/*   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, */
+/*   PRIMARY KEY (ID) */
+/* );   */
+/* EOF */
+/* ); */
+
+/* $manager->add_patch('20231011150002',<<<EOF */
+/* create table equaliteach_quiz_results( */
+/*   `id` INT NOT NULL AUTO_INCREMENT, */
+/*   `equaliteach_submission_id` INT NOT NULL, */
+/*   `question_number` integer not null, */
+/*   `question_text` varchar(255), */
+/*   `user_answer`  varchar(255), */
+/*   `correct_answer`  varchar(255), */
+/*   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, */
+/*   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, */
+/*   PRIMARY KEY (ID), */
+/*   FOREIGN KEY (equaliteach_submission_id) REFERENCES equaliteach_submissions(id) */
+/* ); */
+/* EOF */
+/* ); */
+
+/* $manager->migrate_database(); */
 
 /* function writeToDatabase($quizResults) { */
 /*     global $wpdb; */
@@ -133,10 +133,11 @@ ini_set('log_errors', 1);
 
 require_once 'includes/common.inc.php';
 
+$requestParameters = RequestParametersParser::getRequestParameters($_POST, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null);
+_log($requestParameters);
 
 try
 {
-    $requestParameters = RequestParametersParser::getRequestParameters($_POST, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null);
     $quizResults = new QuizResults();
     $quizResults->InitFromRequest($requestParameters);
     /* writeToDatabase($quizResults); */
