@@ -140,13 +140,15 @@ try
 {
     $quizResults = new QuizResults();
     $quizResults->InitFromRequest($requestParameters);
-    /* writeToDatabase($quizResults); */
+    
     $generator = QuizReportFactory::CreateGenerator($quizResults, $requestParameters);
     $report = $generator->createReport();
 
     $dateTime = date('Y-m-d_H-i-s');
     $resultFilename = dirname(__FILE__) . "/result/quiz_result_{$dateTime}.txt";
     @file_put_contents($resultFilename, $report);
+
+    writeToDatabase($quizResults);
 
     echo "OK";
 }
