@@ -53,12 +53,11 @@ EOF
 
 $manager->migrate_database();
 
-function processData($postdata) {
+function processData($requestParameters) {
     global $wpdb;
     global $debug;    
     $bright = \Bright\brightClass()::getInstance();
     
-    $requestParameters = RequestParametersParser::getRequestParameters($postdata, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null);
     $quizResults = new QuizResults();
     $quizResults->InitFromRequest($requestParameters);
 
@@ -127,11 +126,8 @@ function processData($postdata) {
 	    'correct_answer' => $question['correct_answer']
 	));
     }
-
-    global $debug;
     if ($debug)
 	var_dump($result);
-    return $requestParameters;
 }
 
 
@@ -159,22 +155,22 @@ ini_set('log_errors', 1);
 require_once 'includes/common.inc.php';
 
 
-if ($debug) {
-    $logs = array("qr1.log","qr2.log", "qr3.log");
-
-    foreach ($logs as $log) {
-	var_dump ("Parsing {$log}");
-	$postdata = unserialize(file_get_contents($log));
-	processData($postdata);
-    }
-    exit;
-}
-
-/* $requestParameters = RequestParametersParser::getRequestParameters($_POST, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null); */
+/* if ($debug) {
+ *     $logs = array("qr1.log","qr2.log", "qr3.log");
+ * 
+ *     foreach ($logs as $log) {
+ * 	var_dump ("Parsing {$log}");
+ * 	$postdata = unserialize(file_get_contents($log));
+ * 	processData($postdata);
+ *     }
+ *     exit;
+ * } */
 
 try
 {
-    $requestParameters = processData($_POST);
+    /* $requestParameters = processData($_POST); */
+    $requestParameters = RequestParametersParser::getRequestParameters($_POST, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null);
+    writeToDatabase($requestParameters);
     $quizResults = new QuizResults();
     $quizResults->InitFromRequest($requestParameters);
     $generator = QuizReportFactory::CreateGenerator($quizResults, $requestParameters);
