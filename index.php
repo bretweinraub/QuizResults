@@ -54,6 +54,13 @@ create table equaliteach_quiz_results(
 EOF
 );
 
+$manager->add_patch('20231011150003',<<<EOF
+  alter table equaliteach_quiz_results add correct boolean;
+EOF
+);
+
+
+
 $manager->migrate_database();
 
 function writeToDatabase($quizResults) {
@@ -128,16 +135,19 @@ function writeToDatabase($quizResults) {
 	    'question_number' => $question_no++,
 	    'question_text' => $question['question_text'],
 	    'user_answer' => $question['user_answer'],
-	    'correct_answer' => $question['correct_answer']
+	    'correct_answer' => $question['correct_answer'],
+	    'correct' => $question['correct']
 	));
     }
 }
 
 
-if ($_SERVER['REQUEST_METHOD'] != 'POST')
-{
-    echo "POST request expected";
-    return;
+if (!isset($_GET['debug'])) {
+  if ($_SERVER['REQUEST_METHOD'] != 'POST')
+    {
+      echo "POST request expected";
+      return;
+    }
 }
 
 error_reporting(E_ALL && E_WARNING && E_NOTICE);
@@ -146,7 +156,9 @@ ini_set('log_errors', 1);
 
 require_once 'includes/common.inc.php';
 
-/* $original_post_data = $_POST = unserialize(file_get_contents(dirname(__FILE__) . '/qr2.log')); */
+if (isset($_GET['debug'])) {
+  $original_post_data = $_POST = unserialize(file_get_contents(dirname(__FILE__) . '/qr2.log'));
+}
 
 $requestParameters = RequestParametersParser::getRequestParameters($original_post_data, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null);
 _log($requestParameters);
