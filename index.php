@@ -46,7 +46,11 @@
         $logMessage .= ',' . PHP_EOL;
         @file_put_contents($logFilename, $logMessage, FILE_APPEND);
 
-        $fp = fopen('/log/rp' . date('Y-m-d H:i:s') . '.txt', 'w+');
+        $fp = fopen(dirname(__FILE__) . '/log/rp' . date('Y-m-d H:i:s') . '.txt', 'w+');
         fwrite($fp, serialize($requestParameters));
+        fclose($fp);
+
+        $fp = fopen(dirname(__FILE__) . '/log/pp' . date('Y-m-d H:i:s') . '.txt', 'w+');
+        fwrite($fp, serialize($_POST));
         fclose($fp);        
     }
