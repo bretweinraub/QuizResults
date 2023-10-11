@@ -55,7 +55,6 @@ $manager->migrate_database();
 
 function writeToDatabase($quizResults) {
     global $wpdb;
-    global $debug;    
     $bright = \Bright\brightClass()::getInstance();
 
     $result = Array();
@@ -85,8 +84,6 @@ function writeToDatabase($quizResults) {
 	} else if ($class = "MultipleChoiceQuestion") {
 	    if ($question->isGraded()) {
 		error_log("no handler for graded multiple choice questions");
-		if ($debug)
-		    xdebug_break();
 	    } else {
 		$this_q['correct'] = false;
 		$this_q['question_text'] = $question->direction;
@@ -99,8 +96,6 @@ function writeToDatabase($quizResults) {
 	    }
 	} else {
 	    error_log("no handler for {$class}");
-	    if ($debug)
-		xdebug_break();
 	}
     }
 
@@ -123,26 +118,13 @@ function writeToDatabase($quizResults) {
 	    'correct_answer' => $question['correct_answer']
 	));
     }
-    if ($debug)
-	var_dump($result);
 }
 
 
-global $debug;
-
-if (isset($_GET['debug'])) {
-    $debug = true;
-}
-
-if ($debug) {
-    $_POST = unserialize(file_get_contents($_GET['debug']));
-} else {
-    if ($_SERVER['REQUEST_METHOD'] != 'POST')
-    {
-	echo "POST request expected";
-	return;
-    }
-
+if ($_SERVER['REQUEST_METHOD'] != 'POST')
+{
+    echo "POST request expected";
+    return;
 }
 
 error_reporting(E_ALL && E_WARNING && E_NOTICE);
@@ -151,17 +133,6 @@ ini_set('log_errors', 1);
 
 require_once 'includes/common.inc.php';
 
-
-/* if ($debug) {
- *     $logs = array("qr1.log","qr2.log", "qr3.log");
- * 
- *     foreach ($logs as $log) {
- * 	var_dump ("Parsing {$log}");
- * 	$postdata = unserialize(file_get_contents($log));
- * 	processData($postdata);
- *     }
- *     exit;
- * } */
 
 try
 {
