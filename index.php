@@ -2,6 +2,8 @@
 
 header('Access-Control-Allow-Origin: *');
 
+$original_post_data = clone($_POST);
+
 require_once("../../../wp-load.php");
 
 function initializeManager() {
@@ -133,13 +135,15 @@ ini_set('log_errors', 1);
 
 require_once 'includes/common.inc.php';
 
-$requestParameters = RequestParametersParser::getRequestParameters($_POST, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null);
+$requestParameters = RequestParametersParser::getRequestParameters($original_post_data, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null);
 _log($requestParameters);
 
 try
 {
     $quizResults = new QuizResults();
     $quizResults->InitFromRequest($requestParameters);
+
+    writeToDatabase($quizResults);
     
     $generator = QuizReportFactory::CreateGenerator($quizResults, $requestParameters);
     $report = $generator->createReport();
@@ -148,7 +152,6 @@ try
     $resultFilename = dirname(__FILE__) . "/result/quiz_result_{$dateTime}.txt";
     @file_put_contents($resultFilename, $report);
 
-    writeToDatabase($quizResults);
 
     echo "OK";
 }
