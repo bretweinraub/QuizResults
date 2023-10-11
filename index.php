@@ -159,23 +159,22 @@ ini_set('log_errors', 1);
 require_once 'includes/common.inc.php';
 
 
-$logs = array("qr1.log","qr2.log", "qr3.log");
+if ($debug) {
+    $logs = array("qr1.log","qr2.log", "qr3.log");
 
-foreach ($logs as $log) {
-    var_dump ("Parsing {$log}");
-    $postdata = unserialize(file_get_contents($log));
-    processData($postdata);
-}
-
-if ($debug)
+    foreach ($logs as $log) {
+	var_dump ("Parsing {$log}");
+	$postdata = unserialize(file_get_contents($log));
+	processData($postdata);
+    }
     exit;
-
-$requestParameters = processData($_POST);
+}
 
 /* $requestParameters = RequestParametersParser::getRequestParameters($_POST, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null); */
 
 try
 {
+    $requestParameters = processData($_POST);
     $quizResults = new QuizResults();
     $quizResults->InitFromRequest($requestParameters);
     $generator = QuizReportFactory::CreateGenerator($quizResults, $requestParameters);
