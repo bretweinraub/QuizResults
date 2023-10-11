@@ -140,7 +140,7 @@ try
     $requestParameters = RequestParametersParser::getRequestParameters($_POST, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null);
     $quizResults = new QuizResults();
     $quizResults->InitFromRequest($requestParameters);
-    writeToDatabase($quizResults);
+    /* writeToDatabase($quizResults); */
     $generator = QuizReportFactory::CreateGenerator($quizResults, $requestParameters);
     $report = $generator->createReport();
 
