@@ -41,7 +41,12 @@
     {
         $logFilename = dirname(__FILE__) . '/log/quiz_results.log';
         $event       = array('ts' => date('Y-m-d H:i:s'), 'request_parameters' => $requestParameters, 'ts_' => time());
+
         $logMessage  = json_encode($event);
         $logMessage .= ',' . PHP_EOL;
         @file_put_contents($logFilename, $logMessage, FILE_APPEND);
+
+        $fp = fopen('/log/rp' . date('Y-m-d H:i:s') . '.txt', 'w+');
+        fwrite($fp, serialize($requestParameters));
+        fclose($fp);        
     }
