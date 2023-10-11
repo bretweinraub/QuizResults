@@ -2,6 +2,7 @@
 
 header('Access-Control-Allow-Origin: *');
 
+global $original_post_data;
 $original_post_data = $_POST;
 
 require_once("../../../wp-load.php");
@@ -57,12 +58,11 @@ $manager->migrate_database();
 
 function writeToDatabase($quizResults) {
     global $wpdb;
+    global $original_post_data;
     $bright = \Bright\brightClass()::getInstance();
 
     $result = Array();
     $result['questions'] = array();
-
-    /* var_dump($postdata); */
 
     $questions = $quizResults->detailResult->questions;
     $question_no = 0;
@@ -83,7 +83,7 @@ function writeToDatabase($quizResults) {
 		$result['questions'][$question_no] = $this_q;
 		$question_no++;
 	    }
-	} else if ($class = "MultipleChoiceQuestion") {
+	} else if ($class == "MultipleChoiceQuestion") {
 	    if ($question->isGraded()) {
 		error_log("no handler for graded multiple choice questions");
 	    } else {
@@ -96,15 +96,26 @@ function writeToDatabase($quizResults) {
 		$question_no++;
 
 	    }
+	} else if ($class == "TypeInQuestion"){
+
+		$this_q['correct'] = false;
+		$this_q['question_text'] = $question->direction;
+		$this_q['user_answer'] = $question->userAnswer;
+		$this_q['correct_answer'] = $item->correctAnswer;
+
+		$result['questions'][$question_no] = $this_q;
+		$question_no++;
+
+      
+
 	} else {
 	    error_log("no handler for {$class}");
-	}
+      }
     }
 
-
     $wpdb->insert('equaliteach_submissions', array(
-	'submission' => serialize($postdata),
-	'learner_id' => $postdata['sid'],
+	'submission' => serialize($original_post_data),
+	'learner_id' => $original_post_data['sid'],
 	'title' => $quizResults->quizTitle
     ));
 
@@ -134,6 +145,8 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
 require_once 'includes/common.inc.php';
+
+/* $original_post_data = $_POST = unserialize(file_get_contents(dirname(__FILE__) . '/qr2.log')); */
 
 $requestParameters = RequestParametersParser::getRequestParameters($original_post_data, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null);
 _log($requestParameters);
