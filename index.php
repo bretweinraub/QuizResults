@@ -53,7 +53,7 @@ EOF
 
 $manager->migrate_database();
 
-function processData($requestParameters) {
+function writeToDatabase($requestParameters) {
     global $wpdb;
     global $debug;    
     $bright = \Bright\brightClass()::getInstance();
