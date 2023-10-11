@@ -2,7 +2,7 @@
 
 header('Access-Control-Allow-Origin: *');
 
-$original_post_data = clone($_POST);
+$original_post_data = $_POST;
 
 require_once("../../../wp-load.php");
 
