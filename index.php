@@ -53,13 +53,10 @@ EOF
 
 $manager->migrate_database();
 
-function writeToDatabase($requestParameters) {
+function writeToDatabase($quizResults) {
     global $wpdb;
     global $debug;    
     $bright = \Bright\brightClass()::getInstance();
-    
-    $quizResults = new QuizResults();
-    $quizResults->InitFromRequest($requestParameters);
 
     $result = Array();
     $result['questions'] = array();
@@ -170,9 +167,9 @@ try
 {
     /* $requestParameters = processData($_POST); */
     $requestParameters = RequestParametersParser::getRequestParameters($_POST, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null);
-    writeToDatabase($requestParameters);
     $quizResults = new QuizResults();
     $quizResults->InitFromRequest($requestParameters);
+    writeToDatabase($quizResults);
     $generator = QuizReportFactory::CreateGenerator($quizResults, $requestParameters);
     $report = $generator->createReport();
 
