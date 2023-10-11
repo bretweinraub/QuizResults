@@ -5,7 +5,7 @@
     Description: Record iSpring quiz results to the database
     Author: Aura Software
     Text Domain: equaliteach-quiz-results
-    Version: 1.0
+    Version: 1.1
     Author URI: http://www.aura-software.com/
 
     Source code created by Aura Software, LLC is licensed under a
