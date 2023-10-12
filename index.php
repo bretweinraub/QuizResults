@@ -220,6 +220,8 @@ catch (Exception $e)
 
 function _log($requestParameters)
 {
+    global $original_post_data;
+    
     $logFilename = dirname(__FILE__) . '/log/quiz_results.log';
     $event       = array('ts' => date('Y-m-d H:i:s'), 'request_parameters' => $requestParameters, 'ts_' => time());
 
