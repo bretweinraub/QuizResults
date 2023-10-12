@@ -60,6 +60,17 @@ EOF
 );
 
 
+$manager->add_patch('20231011150004',<<<EOF
+  alter table equaliteach_quiz_results add question_type varchar(64) not null;
+EOF
+);
+
+$manager->add_patch('20231011150005',<<<EOF
+  alter table equaliteach_quiz_results add error text;
+EOF
+);
+
+
 
 $manager->migrate_database();
 
@@ -75,25 +86,40 @@ function writeToDatabase($quizResults) {
     $question_no = 0;
     
     foreach ($questions as $question) {
-	$class = get_class($question);
+      $class = get_class($question);
 
-	if ($class == "WordBankQuestion") {
-	    foreach ($question->details->items as $item) {
-		
-		$this_q = array();
 
-		$this_q['question_text'] = $question->direction;
-		$this_q['correct'] = $item->correct;
-		$this_q['user_answer'] = $item->userAnswer;
-		$this_q['correct_answer'] = $item->getValue();
+      if ($class == "WordBankQuestion") {
+        foreach ($question->details->items as $item) {
+          $this_q = array();
 
-		$result['questions'][$question_no] = $this_q;
-		$question_no++;
-	    }
-	} else if ($class == "MultipleChoiceQuestion") {
-	    if ($question->isGraded()) {
-		error_log("no handler for graded multiple choice questions");
-	    } else {
+          $this_q['question_type'] = $class;
+          $this_q['question_text'] = $question->direction;
+          $this_q['correct'] = $item->correct;
+          $this_q['user_answer'] = $item->userAnswer;
+          $this_q['correct_answer'] = $item->getValue();
+
+          $result['questions'][$question_no] = $this_q;
+          $question_no++;
+        }
+      } else if ($class == "MultipleChoiceQuestion") {
+        /* if ($question->isGraded()) { */
+        /* error_log("no handler for graded multiple choice questions"); */
+        /* } else { */
+        $this_q = array();
+        $this_q['question_type'] = $class;    
+        $this_q['correct'] = false;
+        $this_q['question_text'] = $question->direction;
+        $this_q['user_answer'] = $question->userAnswer;
+        $this_q['correct_answer'] = $item->correctAnswer;
+
+        $result['questions'][$question_no] = $this_q;
+        $question_no++;
+
+        /* } */
+      } else if ($class == "TypeInQuestion"){
+        $this_q = array();
+        $this_q['question_type'] = $class;    
 		$this_q['correct'] = false;
 		$this_q['question_text'] = $question->direction;
 		$this_q['user_answer'] = $question->userAnswer;
@@ -101,25 +127,27 @@ function writeToDatabase($quizResults) {
 
 		$result['questions'][$question_no] = $this_q;
 		$question_no++;
+      } else {
+        $this_q = array();
+        $this_q['question_type'] = $class;    
+        try {
+          $this_q['correct'] = false;
+          $this_q['question_text'] = $question->direction;
+          $this_q['user_answer'] = $question->userAnswer;
+          $this_q['correct_answer'] = $item->correctAnswer;
+        } 
+        catch (Exception $e) {
+          error_log($e);
 
-	    }
-	} else if ($class == "TypeInQuestion"){
+          $this_q['error'] = $e->getMessage();
 
-		$this_q['correct'] = false;
-		$this_q['question_text'] = $question->direction;
-		$this_q['user_answer'] = $question->userAnswer;
-		$this_q['correct_answer'] = $item->correctAnswer;
-
-		$result['questions'][$question_no] = $this_q;
-		$question_no++;
-
-      
-
-	} else {
-	    error_log("no handler for {$class}");
-      }
+          echo "Error: " . $e->getMessage();
+        }
+        $result['questions'][$question_no] = $this_q;
+        $question_no++;
+      } 
     }
-
+    
     $wpdb->insert('equaliteach_submissions', array(
 	'submission' => serialize($original_post_data),
 	'learner_id' => $original_post_data['sid'],
@@ -129,15 +157,18 @@ function writeToDatabase($quizResults) {
     $submission_id = $wpdb->insert_id;
 
     $question_no=0;
+
     foreach($result['questions'] as $question) {
-	$wpdb->insert('equaliteach_quiz_results', array(
+      $wpdb->insert('equaliteach_quiz_results', array(
 	    'equaliteach_submission_id' => $submission_id,
 	    'question_number' => $question_no++,
 	    'question_text' => $question['question_text'],
+        'question_type' => $question['question_type'],
 	    'user_answer' => $question['user_answer'],
+        'error' => $question['error'],
 	    'correct_answer' => $question['correct_answer'],
 	    'correct' => $question['correct']
-	));
+      ));
     }
 }
 
@@ -157,7 +188,7 @@ ini_set('log_errors', 1);
 require_once 'includes/common.inc.php';
 
 if (isset($_GET['debug'])) {
-  $original_post_data = $_POST = unserialize(file_get_contents(dirname(__FILE__) . '/qr2.log'));
+  $original_post_data = unserialize(file_get_contents(dirname(__FILE__) . '/' . $_GET['debug'] ));
 }
 
 $requestParameters = RequestParametersParser::getRequestParameters($original_post_data, !empty($HTTP_RAW_POST_DATA) ? $HTTP_RAW_POST_DATA : null);
@@ -197,6 +228,6 @@ function _log($requestParameters)
     @file_put_contents($logFilename, $logMessage, FILE_APPEND);
 
     $fp = fopen(dirname(__FILE__) . '/log/pp' . date('Y-m-d H:i:s') . '.txt', 'w+');
-    fwrite($fp, serialize($_POST));
+    fwrite($fp, serialize($original_post_data));
     fclose($fp);        
 }
